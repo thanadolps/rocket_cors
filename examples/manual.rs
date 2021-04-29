@@ -20,20 +20,6 @@ fn borrowed(options: State<'_, Cors>) -> impl Responder<'_, '_> {
         .respond_borrowed(|guard| guard.responder("Hello CORS"))
 }
 
-/// Using a `Response` instead of a `Responder`. You generally won't have to do this.
-/// Note that the `'r` lifetime annotation is not requred here because `State` borrows with lifetime
-/// `'r` and so does `Responder`!
-#[get("/response")]
-fn response(options: State<'_, Cors>) -> impl Responder<'_, '_> {
-    let mut response = Response::new();
-    let body = "Hello CORS!";
-    response.set_sized_body(body.len(), Cursor::new(body));
-
-    options
-        .inner()
-        .respond_borrowed(move |guard| guard.response(response))
-}
-
 /// Create and use an ad-hoc Cors
 /// Note that the `'r` lifetime is needed because the compiler cannot elide anything.
 ///
@@ -72,7 +58,7 @@ fn cors_options() -> CorsOptions {
 #[rocket::main]
 async fn main() -> Result<(), Error> {
     rocket::build()
-        .mount("/", routes![borrowed, response, owned, owned_options,])
+        .mount("/", routes![borrowed, owned, owned_options,])
         .mount("/", rocket_cors::catch_all_options_routes()) // mount the catch all routes
         .manage(cors_options().to_cors().expect("To not fail"))
         .launch()

@@ -36,12 +36,6 @@ fn cors_manual(cors: cors::Guard<'_>) -> cors::Responder<'_, '_, &str> {
     cors.responder("Hello CORS")
 }
 
-/// Using a `Response` instead of a `Responder`
-#[get("/response")]
-fn response(cors: cors::Guard<'_>) -> Response<'_> {
-    cors.response(Response::new())
-}
-
 /// `Responder` with String
 #[get("/responder/string")]
 fn responder_string(cors: cors::Guard<'_>) -> cors::Responder<'_, 'static, String> {
@@ -81,10 +75,7 @@ fn make_cors() -> cors::Cors {
 fn make_rocket() -> rocket::Rocket<rocket::Build> {
     rocket::build()
         .mount("/", routes![cors_responder, panicking_route])
-        .mount(
-            "/",
-            routes![response, responder_string, responder_unit, state],
-        )
+        .mount("/", routes![responder_string, responder_unit, state])
         .mount("/", cors::catch_all_options_routes()) // mount the catch all routes
         .mount("/", routes![cors_manual, cors_manual_options]) // manual OPTIOONS routes
         .manage(make_cors())
